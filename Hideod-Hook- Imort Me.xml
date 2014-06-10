@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<hookexport>
+  <hookdata>
+    <config>
+      <hook_name>(SJ33) HidePost</hook_name>
+      <hook_desc>Hide posts from guests</hook_desc>
+      <hook_author>mr.wosi | Skinod.com</hook_author>
+      <hook_email>wolaws@gmail.com</hook_email>
+      <hook_website>http://www.skinod.com</hook_website>
+      <hook_update_check/>
+      <hook_requirements><![CDATA[a:3:{s:21:"required_applications";a:0:{}s:20:"hook_php_version_min";s:0:"";s:20:"hook_php_version_max";s:0:"";}]]></hook_requirements>
+      <hook_version_human>1.0.0</hook_version_human>
+      <hook_version_long>10000</hook_version_long>
+      <hook_extra_data><![CDATA[a:5:{s:7:"display";a:3:{s:8:"settings";s:24:"Setting groups: Hidepost";s:8:"language";s:68:"From forums_public_topic: hideod_msg, hideod_register, hideod_signin";s:9:"templates";s:25:"From skin_topic: hidepost";}s:13:"settingGroups";a:1:{s:0:"";s:6:"hideod";}s:8:"language";a:2:{s:19:"forums_public_topic";a:3:{s:0:"";s:10:"hideod_msg";i:1;s:15:"hideod_register";i:2;s:13:"hideod_signin";}s:12:"public_topic";a:3:{i:0;s:13:"hideod_signin";i:1;s:15:"hideod_register";i:2;s:10:"hideod_msg";}}s:8:"database";a:0:{}s:9:"templates";a:1:{s:10:"skin_topic";a:1:{i:0;s:8:"hidepost";}}}]]></hook_extra_data>
+      <hook_key>hideod</hook_key>
+      <hook_global_caches/>
+    </config>
+  </hookdata>
+  <hookfiles>
+    <file>
+      <hook_file_real>hidepost.php</hook_file_real>
+      <hook_type>skinHooks</hook_type>
+      <hook_classname>hideod</hook_classname>
+      <hook_data><![CDATA[a:8:{s:12:"dataLocation";s:0:"";s:14:"libApplication";s:0:"";s:15:"classToOverload";s:10:"skin_topic";s:9:"skinGroup";N;s:12:"skinFunction";N;s:4:"type";N;s:2:"id";N;s:8:"position";N;}]]></hook_data>
+      <hooks_source><![CDATA[class hideod extends skin_topic(~id~)
+{    
+	public function post($post, $displayData, $topic, $forum=array())
+	{
+    	if(in_array($this->memberData['member_group_id'],explode(',', $this->settings['hideod_groups']))){
+        	if( in_array($topic['forum_id'],explode(',', $this->settings['hideod_forums'])) ) {
+                $register = "<a href='index.php?app=core&module=global&section=register'>".$this->lang->words['hideod_register']."</a>";
+                $signin = "<a href='index.php?app=core&module=global&section=login' rel='hideodsigin'>".$this->lang->words['hideod_signin']."</a>";
+                $msg = sprintf($this->lang->words['hideod_msg'], $register, $signin);
+                $box = $this->registry->output->getTemplate( 'topic' )->hidepost($msg);
+
+                switch ($this->settings['hideod_hideaction']){
+                    case 'allhide';
+                        $post['post']['post'] = $box;
+                        $post['post']['attachmentHtml'] = "";
+                    break;
+                    case 'onlyfirsthide';
+                        if($post['post']['post_count'] == 1) {
+                            $post['post']['post'] = $box;
+                            $post['post']['attachmentHtml'] = "";
+                        }
+                    break;
+                    case 'expectfirst';
+                        if($post['post']['post_count'] != 1) {
+                            $post['post']['post'] = $box;
+                            $post['post']['attachmentHtml'] = "";
+                        }
+                    break;
+                }
+            }
+		}
+        return parent::post($post, $displayData, $topic, $forum=array());
+	}
+}]]></hooks_source>
+    </file>
+  </hookfiles>
+  <hookextras_settings>
+    <setting>
+      <conf_is_title>1</conf_is_title>
+      <conf_title_title>Hidepost</conf_title_title>
+      <conf_title_desc>Hide topic posts from Users</conf_title_desc>
+      <conf_title_noshow>0</conf_title_noshow>
+      <conf_title_keyword>hideod</conf_title_keyword>
+      <conf_title_app>forums</conf_title_app>
+      <conf_title_tab>Skinod</conf_title_tab>
+    </setting>
+    <setting>
+      <conf_id>582</conf_id>
+      <conf_title>Forums</conf_title>
+      <conf_description>Select in which forums this new feature will be available</conf_description>
+      <conf_group>52</conf_group>
+      <conf_type>multi</conf_type>
+      <conf_key>hideod_forums</conf_key>
+      <conf_value/>
+      <conf_default>1,2</conf_default>
+      <conf_extra>#show_forums#</conf_extra>
+      <conf_evalphp><![CDATA[if ( $save == 1)
+{
+	if ( is_array($_POST['hideod_forums']) )
+	{
+		$_POST['hideod_forums'] = implode(",",$_POST['hideod_forums']);
+	}
+	else
+	{
+		$_POST['hideod_forums'] = "";
+	}
+	
+	$key = 'hideod_forums';
+}
+if ( $show == 1 )
+{
+	$key = 'hideod_forums[]';
+} ]]></conf_evalphp>
+      <conf_protected>1</conf_protected>
+      <conf_position>4</conf_position>
+      <conf_start_group/>
+      <conf_add_cache>1</conf_add_cache>
+      <conf_keywords/>
+      <conf_title_keyword>hideod</conf_title_keyword>
+      <conf_is_title>0</conf_is_title>
+    </setting>
+    <setting>
+      <conf_id>584</conf_id>
+      <conf_title>Restricted Groups</conf_title>
+      <conf_description><![CDATA[Users from this group can't see the contents]]></conf_description>
+      <conf_group>52</conf_group>
+      <conf_type>multi</conf_type>
+      <conf_key>hideod_groups</conf_key>
+      <conf_value/>
+      <conf_default>2,1</conf_default>
+      <conf_extra>#show_groups#</conf_extra>
+      <conf_evalphp><![CDATA[if ( $save == 1)
+{
+	if ( is_array($_POST['hideod_groups']) )
+	{
+		$_POST['hideod_groups'] = implode(",",$_POST['hideod_groups']);
+	}
+	else
+	{
+		$_POST['hideod_groups'] = "";
+	}
+	
+	$key = 'hideod_groups';
+}
+if ( $show == 1 )
+{
+	$key = 'hideod_groups[]';
+} ]]></conf_evalphp>
+      <conf_protected>1</conf_protected>
+      <conf_position>3</conf_position>
+      <conf_start_group/>
+      <conf_add_cache>1</conf_add_cache>
+      <conf_keywords/>
+      <conf_title_keyword>hideod</conf_title_keyword>
+      <conf_is_title>0</conf_is_title>
+    </setting>
+    <setting>
+      <conf_id>585</conf_id>
+      <conf_title>Select action:</conf_title>
+      <conf_description/>
+      <conf_group>52</conf_group>
+      <conf_type>dropdown</conf_type>
+      <conf_key>hideod_hideaction</conf_key>
+      <conf_value/>
+      <conf_default>allhide</conf_default>
+      <conf_extra>allhide=Hide all posts&#13;
+onlyfirsthide=Hide first post only&#13;
+expectfirst=Hide all posts except first post</conf_extra>
+      <conf_evalphp/>
+      <conf_protected>1</conf_protected>
+      <conf_position>2</conf_position>
+      <conf_start_group/>
+      <conf_add_cache>1</conf_add_cache>
+      <conf_keywords/>
+      <conf_title_keyword>hideod</conf_title_keyword>
+      <conf_is_title>0</conf_is_title>
+    </setting>
+    <setting>
+      <conf_id>581</conf_id>
+      <conf_title>Is this hook enable ?</conf_title>
+      <conf_description/>
+      <conf_group>52</conf_group>
+      <conf_type>yes_no</conf_type>
+      <conf_key>hideod_onoff</conf_key>
+      <conf_value/>
+      <conf_default>1</conf_default>
+      <conf_extra/>
+      <conf_evalphp/>
+      <conf_protected>1</conf_protected>
+      <conf_position>1</conf_position>
+      <conf_start_group/>
+      <conf_add_cache>1</conf_add_cache>
+      <conf_keywords/>
+      <conf_title_keyword>hideod</conf_title_keyword>
+      <conf_is_title>0</conf_is_title>
+    </setting>
+  </hookextras_settings>
+  <hookextras_language>
+    <language>
+      <word_app>forums</word_app>
+      <word_pack>public_topic</word_pack>
+      <word_key>hideod_msg</word_key>
+      <word_default>To see the content of this post you must %s or %s to your account.</word_default>
+    </language>
+    <language>
+      <word_app>forums</word_app>
+      <word_pack>public_topic</word_pack>
+      <word_key>hideod_register</word_key>
+      <word_default>Register</word_default>
+    </language>
+    <language>
+      <word_app>forums</word_app>
+      <word_pack>public_topic</word_pack>
+      <word_key>hideod_signin</word_key>
+      <word_default>Sign in</word_default>
+    </language>
+  </hookextras_language>
+  <hookextras_modules/>
+  <hookextras_help/>
+  <hookextras_templates>
+    <templates>
+      <template_group>skin_topic</template_group>
+      <template_content><![CDATA[<div style="background-color:rgba(255,217,217,.5); border:1px solid rgba(255,100,100,.7); border-radius:2px; padding:8px 12px;">
+    	<img style="margin-right:6px" src="{$this->settings['public_dir']}skinod/hideod/hideod_alert.png" />
+        <p style="display:inline; position:relative; top:1px;">{$msg}</p>
+    </div>]]></template_content>
+      <template_name>hidepost</template_name>
+      <template_data>$msg</template_data>
+      <template_updated>1343706827</template_updated>
+      <template_removable>0</template_removable>
+      <template_added_to>0</template_added_to>
+      <template_user_added>0</template_user_added>
+      <template_user_edited>0</template_user_edited>
+      <template_master_key>root</template_master_key>
+    </templates>
+  </hookextras_templates>
+  <hookextras_css/>
+  <hookextras_replacements/>
+  <hookextras_tasks/>
+  <hookextras_database_create/>
+  <hookextras_database_alter/>
+  <hookextras_database_update/>
+  <hookextras_database_insert/>
+</hookexport>
